@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from game import Game
+from game import Game, IllegalActionException
 from ai import AI
 
 
@@ -22,8 +22,13 @@ def main():
 
         first = input("Do you wish to play first? ")
         if first and first[0].lower() == 'y':
-            my_move = int(input("Enter your move: "))
-            print(game.apply(my_move))
+            while True:
+                my_move = int(input("Enter your move: "))
+                try:
+                    print(game.apply(my_move))
+                    break
+                except IllegalActionException:
+                    print("Illegal move... Try again.")
 
         while not game.over:
             ai_move = game.best_action
@@ -33,8 +38,13 @@ def main():
             if game.over:
                 break
 
-            my_move = int(input("Enter your move: "))
-            print(game.apply(my_move))
+            while True:
+                my_move = int(input("Enter your move: "))
+                try:
+                    print(game.apply(my_move))
+                    break
+                except IllegalActionException:
+                    print("Illegal move... Try again.")
 
         print(f"Game over: {game.winner} wins!")
 

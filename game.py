@@ -23,9 +23,13 @@ class Game:
 
     def apply(self, action):
         if action not in self.mcts.state.actions:
-            raise RuntimeError("Illegal action!")
+            raise IllegalActionException(f"tried illegal action {action}")
         self.mcts.apply(action)
         return self
 
     def __repr__(self):
         return str(self.mcts.state)
+
+
+class IllegalActionException(Exception):
+    pass
