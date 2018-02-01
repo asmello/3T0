@@ -65,7 +65,7 @@ class MCTS:
             self.node.expand(self.estimator)
         self.node = self.node.edge(action).end
 
-    def search(self, tau=1.0, maxiter=100, c=1.0):
+    def search(self, tau=1.0, maxiter=100, c=1.0, eps=0.25):
 
         # V(s, a) = Q(s, a) + U(s, a)
         def V(edge):
@@ -73,6 +73,11 @@ class MCTS:
                 * sqrt(node.visits) / (1 + edge.visits)
 
         node = self.node
+
+        # add Dirichlet noise for additional exploration at root
+        noise = np.random.dirichlet([0.003] * len(node.edges))
+        for i, edge in enumerate(node.edges):
+            edge.prior = (1 - eps) * edge.prior + eps * noise[i]
 
         for i in range(maxiter):
 
