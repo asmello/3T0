@@ -75,9 +75,9 @@ class MCTS:
         node = self.node
 
         # add Dirichlet noise for additional exploration at root
-        noise = np.random.dirichlet([0.003] * len(node.edges))
-        for i, edge in enumerate(node.edges):
-            edge.prior = (1 - eps) * edge.prior + eps * noise[i]
+        # noise = np.random.dirichlet([0.003] * len(node.edges))
+        # for i, edge in enumerate(node.edges):
+        #     edge.prior = (1 - eps) * edge.prior + eps * noise[i]
 
         for i in range(maxiter):
 
