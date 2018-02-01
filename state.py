@@ -49,3 +49,11 @@ class State:
         board = self.board.copy()
         board[action] = self.player
         return State(board, -self.player)
+
+    def __repr__(self):
+        s = '\n'
+        for i in range(3):
+            cells = ' '.join(State.player_codes[x]
+                             for x in self.board[3*i:3*i+3])
+            s += ' ' * 4 + cells + '\n'
+        return s
