@@ -36,16 +36,14 @@ class State:
 
         self.over = self.winner or self.full
 
-    @property
-    def raw(self):
-        return np.stack((self.board.reshape(3, 3),
-                        np.full((3, 3), self.player)),
-                        axis=-1)
+        # legal actions from this state
+        self.actions = [] if self.over \
+            else np.flatnonzero(self.board == 0)
 
-    @property
-    def actions(self):
-        return [] if self.over \
-                  else np.flatnonzero(self.board == 0)
+        # this works as input for the Estimator class
+        self.raw = np.stack((self.board.reshape(3, 3),
+                            np.full((3, 3), self.player)),
+                            axis=-1)
 
     def apply(self, action):
         board = self.board.copy()

@@ -7,20 +7,19 @@ from math import sqrt
 class Edge:
 
     def __init__(self, start, action, prior):
-        self.visits = 0  # N
         self.total_value = 0  # W
         self.prior = prior  # P
+        self.visits = 0  # N
+        self.value = 0  # Q
         self.action = action
         self.start = start
         self.end = Node(start.state.apply(action), pedge=self)
 
-    @property
-    def value(self):
-        return self.total_value / max(self.visits, 1)  # Q
-
     def update(self, v):
         self.visits += 1
         self.total_value += v
+        self.value = self.total_value / self.visits
+        self.start.visits += 1
 
 
 class Node:
@@ -29,6 +28,7 @@ class Node:
         self.state = state or State(player=player)
         self.pedge = pedge
         self.edges = []
+        self.visits = 0
 
     @property
     def is_leaf(self):
@@ -37,10 +37,6 @@ class Node:
     @property
     def is_root(self):
         return not self.pedge
-
-    @property
-    def visits(self):
-        return sum(edge.visits for edge in self.edges)
 
     def expand(self, estimator):
         p, v = estimator.compute(self.state)
