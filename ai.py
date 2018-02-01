@@ -37,7 +37,7 @@ class AI:
 
         return s0.state.winner
 
-    def simulate(self, first=1, tau_cutoff=5):  # self-play one game
+    def simulate(self, first=1, tau_cutoff=20):  # self-play one game
 
         mcts = MCTS(self.estimator, first=first)
         history = []
