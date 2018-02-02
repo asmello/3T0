@@ -75,9 +75,9 @@ class MCTS:
         node = self.node
 
         # add Dirichlet noise for additional exploration at root
-        # noise = np.random.dirichlet([0.003] * len(node.edges))
-        # for i, edge in enumerate(node.edges):
-        #     edge.prior = (1 - eps) * edge.prior + eps * noise[i]
+        noise = sample_dirichlet(len(node.edges))
+        for i, edge in enumerate(node.edges):
+            edge.prior = (1 - eps) * edge.prior + eps * noise[i]
 
         for i in range(maxiter):
 
@@ -105,3 +105,12 @@ class MCTS:
 
         visits = np.array(visits) ** (1/tau)
         return visits / np.sum(visits)  # policy probability distribution (pi)
+
+
+def sample_dirichlet(n):
+    '''Ugly workaround for bug in numpy due to small alpha.'''
+    while True:
+        try:
+            return np.random.dirichlet(np.full(n, 0.003))
+        except ZeroDivisionError:
+            continue
