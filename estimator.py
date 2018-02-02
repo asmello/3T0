@@ -1,7 +1,7 @@
 from keras.layers import Input, Dense, Conv2D, LeakyReLU, \
                          BatchNormalization, Flatten, add
 from keras.regularizers import l2
-from keras.models import Model
+from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
 
 import numpy as np
@@ -9,12 +9,15 @@ import numpy as np
 
 class Estimator:
 
-    def __init__(self, input_shape, output_dim, reg_const=1e-4):
+    def __init__(self, input_shape, output_dim, reg_const=1e-4, filepath=None):
         self.reg_const = reg_const
         self.input_shape = input_shape
         self.output_dim = output_dim
         self.reg_const = reg_const
-        self.model = self._build_model()
+        self.model = load_model(filepath) if filepath else self._build_model()
+
+    def save(self, filepath):
+        self.model.save(filepath)
 
     def _conv_layer(self, x, filters, kernel_size):
         x = Conv2D(

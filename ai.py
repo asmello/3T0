@@ -2,14 +2,21 @@ from mcts import MCTS
 from state import State
 from estimator import Estimator
 
+import os.path
 import numpy as np
 from math import ceil
 
 
 class AI:
 
-    def __init__(self):
-        self.estimator = Estimator(State.raw_shape, len(State.domain))
+    def __init__(self, filepath='best_estimator.h5'):
+        self.filepath = filepath
+        if os.path.isfile(filepath):
+            self.estimator = Estimator(State.raw_shape,
+                                       len(State.domain),
+                                       filepath=filepath)
+        else:
+            self.estimator = Estimator(State.raw_shape, len(State.domain))
 
     def duel(self, opponent, first=1):  # duel-play one game
 
@@ -81,6 +88,7 @@ class AI:
                 print("New model score:", score)
                 if score >= ceil(0.05 * eval_episodes):
                     self.estimator = new_estimator
+                    self.estimator.save(self.filepath)
                     print("New model selected.")
                 else:
                     print("New model rejected.")
