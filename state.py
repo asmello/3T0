@@ -99,8 +99,17 @@ class State:
         return State(board, (i % 3, j % 3), -self.player)
 
     def __repr__(self):
-        s = '\n'
-        for i in range(9):
-            cells = ' '.join(State.player_codes[x] for x in self.board[i, :])
-            s += ' ' * 4 + cells + '\n'
-        return s
+        s = ("    -------------------\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    -------------------\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    -------------------\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    |{} {} {}|{} {} {}|{} {} {}|\n"
+             "    -------------------")
+        return s.format(*(State.player_codes[x] for x in self.board.flatten()))
