@@ -8,7 +8,7 @@ class State:
     raw_shape = (9, 9, 3)
     player_codes = {1: 'X', 0: '-', -1: 'O'}
 
-    def __init__(self, board=None, cell=None, player=1):
+    def __init__(self, board=None, active_cell=None, player=1):
         '''Note: if board specified, cell is required.'''
 
         self.player = player
@@ -17,7 +17,6 @@ class State:
         self.winner = 0
         self.cell_winner = np.zeros((3, 3))
         self.cell_full = np.zeros((3, 3))
-        self.active_cell = cell
 
         # no board --> initial state
         if board is None:
@@ -66,7 +65,7 @@ class State:
             # figure out the legal moves
             self.actions = []
             if not self.over:
-                i, j = self.active_cell
+                i, j = active_cell
                 if self.cell_locked[i, j]:
                     # can pick any unlocked cell
                     for i in range(3):
