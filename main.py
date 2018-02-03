@@ -8,14 +8,15 @@ def main(args):
 
     ai = AI(load=args.input, filepath=args.output)
 
-    print('=' * 80)
-    print("Training...")
-    print('=' * 80)
-    ai.train(episodes=args.num_episodes,
-             update_freq=args.update_freq,
-             eval_episodes=args.eval_episodes)
+    if not args.skip_training:
+        print('=' * 80)
+        print("Training...")
+        print('=' * 80)
+        ai.train(episodes=args.num_episodes,
+                 update_freq=args.update_freq,
+                 eval_episodes=args.eval_episodes)
 
-    print("AI is ready!")
+        print("AI is ready!")
 
     while True:
         print("Starting new game...")
@@ -64,6 +65,8 @@ if __name__ == '__main__':
                         help="How many duels used to evaluate new models.")
     parser.add_argument('-o', '--output', default='best_estimator.h5',
                         help="File path to store the best model.")
+    parser.add_argument('-s', '--skip-training', action='store_true',
+                        help="Skip training (requires pre-trained model).")
     parser.add_argument('input', nargs='?',
                         help="Load model from this file.")
     main(parser.parse_args())
