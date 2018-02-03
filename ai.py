@@ -31,7 +31,7 @@ class AI:
 
         while not s0.state.over:
 
-            a = State.domain[np.argmax(s0.search())]
+            a = State.domain[np.argmax(s0.search(eps=0))]
 
             s0.apply(a)
             s1.apply(a)
@@ -39,7 +39,7 @@ class AI:
             if s0.state.over:
                 break
 
-            a = State.domain[np.argmax(s1.search())]
+            a = State.domain[np.argmax(s1.search(eps=0))]
 
             s1.apply(a)
             s0.apply(a)

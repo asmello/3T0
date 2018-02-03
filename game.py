@@ -15,7 +15,7 @@ class Game:
 
     @property
     def best_action(self):
-        return State.domain[np.argmax(self.mcts.search())]
+        return State.domain[np.argmax(self.mcts.search(eps=0))]
 
     @property
     def winner(self):
