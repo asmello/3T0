@@ -107,19 +107,45 @@ class Estimator:
         )
         return model
 
-    def compute(self, state):
-        actions, value = self.model.predict(state.raw[np.newaxis, ...])
-        return actions.squeeze(), value.squeeze()
+    def compute(self, state, use_symmetry=True):
+        '''Computes the priors and value of a random symmetry of the state.'''
+
+        state = state.raw
+
+        # get a random symmetry
+        if use_symmetry:
+            r, h, v = np.random.randint(0, 4), *np.random.randint(0, 2, 2)
+            state = np.rot90(state, r)
+            state = np.fliplr(state) if h else state
+            state = np.flipud(state) if v else state
+
+        # use the neural net to evaluate the state
+        prior, value = self.model.predict(state[np.newaxis, ...])
+
+        # inverse transformation
+        if use_symmetry:
+            prior = prior.reshape(self.input_shape[:2])
+            prior = np.rot90(prior, -r)
+            prior = np.fliplr(prior) if h else prior
+            prior = np.flipud(prior) if v else prior
+            prior = prior.flatten()
+
+        return prior.squeeze(), value.squeeze()
 
     def update(self, games):
+        '''Creates a new model by updating this one with playing history.'''
+
+        # isolate inputs and outputs
         data = ((s, p, -s[0, 0, -1] * w) for h, w in games for s, p in h)
         x, p, v = zip(*data)
 
+        # create a clone of this model
         new = Estimator(self.input_shape,
                         self.output_dim,
                         self.reg_const)
         new.model.set_weights(self.model.get_weights())
 
+        # train the clone on these games
         new.model.fit(
             x=np.array(x),
             y=[np.array(p), np.array(v)],
