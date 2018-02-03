@@ -9,12 +9,13 @@ from math import ceil
 
 class AI:
 
-    def __init__(self, filepath='best_estimator.h5'):
+    def __init__(self, load=None, filepath='best_estimator.h5'):
         self.filepath = filepath
-        if os.path.isfile(filepath):
+        to_load = load or filepath
+        if os.path.isfile(to_load):
             self.estimator = Estimator(State.raw_shape,
                                        len(State.domain),
-                                       filepath=filepath)
+                                       filepath=to_load)
         else:
             self.estimator = Estimator(State.raw_shape, len(State.domain))
 
