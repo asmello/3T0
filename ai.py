@@ -19,7 +19,8 @@ class AI:
         else:
             self.estimator = Estimator(State.raw_shape, len(State.domain))
 
-    def duel(self, opponent, first=1):  # duel-play one game
+    def duel(self, opponent, first=1):
+        '''Play a full game against an opponent AI.'''
 
         if first == -1:
             e0, e1 = opponent, self.estimator
@@ -45,7 +46,8 @@ class AI:
 
         return s0.state.winner
 
-    def simulate(self, first=1, tau_cutoff=20):  # self-play one game
+    def simulate(self, first=1, tau_cutoff=20):
+        '''Simulate a full game by self-playing.'''
 
         mcts = MCTS(self.estimator, first=first)
         history = []
@@ -94,4 +96,4 @@ class AI:
                 else:
                     print("New model rejected.")
 
-                games = games[-5*eval_episodes:]
+                games = games[-5*eval_episodes:]  # crop history

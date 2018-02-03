@@ -61,11 +61,13 @@ class MCTS:
         return self.node.state
 
     def apply(self, action):
+        '''Move to a new state by applying an action.'''
         if self.node.is_leaf:
             self.node.expand(self.estimator)
         self.node = self.node.edge(action).end
 
     def search(self, tau=1.0, maxiter=100, c=1.0, eps=0.25):
+        '''Search the state space for best action.'''
 
         # V(s, a) = Q(s, a) + U(s, a)
         def V(edge):

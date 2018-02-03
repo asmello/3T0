@@ -92,6 +92,7 @@ class State:
                             axis=-1)
 
     def apply(self, action):
+        '''Returns the new state after applying an action.'''
         board = self.board.copy()
         i, j = action // 9, action % 9
         board[i, j] = self.player
