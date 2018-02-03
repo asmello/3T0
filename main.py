@@ -4,14 +4,16 @@ from game import Game, IllegalActionException
 from ai import AI
 
 
-def main():
+def main(args):
 
-    ai = AI()
+    ai = AI(load=args.input, filepath=args.output)
 
     print('=' * 80)
     print("Training...")
     print('=' * 80)
-    ai.train()
+    ai.train(episodes=args.num_episodes,
+             update_freq=args.update_freq,
+             eval_episodes=args.eval_episodes)
 
     print("AI is ready!")
 
@@ -50,4 +52,18 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="UltimateTicTacToe AI")
+    parser.add_argument('-n', '--num-episodes', default=400, type=int,
+                        help="Number of self-play simulations to run.")
+    parser.add_argument('-f', '--update-freq', default=80, metavar="IVAL",
+                        type=int,
+                        help="Train a new model every IVAL simulations.")
+    parser.add_argument('-e', '--eval-episodes', default=20, type=int,
+                        metavar="EVALS",
+                        help="How many duels used to evaluate new models.")
+    parser.add_argument('-o', '--output', default='best_estimator.h5',
+                        help="File path to store the best model.")
+    parser.add_argument('input', nargs='?',
+                        help="Load model from this file.")
+    main(parser.parse_args())

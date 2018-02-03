@@ -61,11 +61,13 @@ class MCTS:
         return self.node.state
 
     def apply(self, action):
+        '''Move to a new state by applying an action.'''
         if self.node.is_leaf:
             self.node.expand(self.estimator)
         self.node = self.node.edge(action).end
 
-    def search(self, tau=1.0, maxiter=100, c=1.0):
+    def search(self, tau=1.0, maxiter=100, c=1.0, eps=0.25):
+        '''Search the state space for best action.'''
 
         # V(s, a) = Q(s, a) + U(s, a)
         def V(edge):
@@ -73,6 +75,11 @@ class MCTS:
                 * sqrt(node.visits) / (1 + edge.visits)
 
         node = self.node
+
+        # add Dirichlet noise for additional exploration at root
+        noise = sample_dirichlet(len(node.edges))
+        for i, edge in enumerate(node.edges):
+            edge.prior = (1 - eps) * edge.prior + eps * noise[i]
 
         for i in range(maxiter):
 
@@ -100,3 +107,12 @@ class MCTS:
 
         visits = np.array(visits) ** (1/tau)
         return visits / np.sum(visits)  # policy probability distribution (pi)
+
+
+def sample_dirichlet(n):
+    '''Ugly workaround for bug in numpy due to small alpha.'''
+    while True:
+        try:
+            return np.random.dirichlet(np.full(n, 0.003))
+        except ZeroDivisionError:
+            continue
