@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 
-import re
-
 from game import Game, IllegalActionException
 from ai import AI
 
 
 def human_move(game):
     while True:
-        m = re.search("([a-zA-Z])(\d)$", input("Enter your move: "))
-        if m:
-            my_move = 9 * (ord(m[1].upper()) - ord('A')) + int(m[2])
-        else:
+        my_move = Game.coord_to_action(input("Enter your move: "))
+        if my_move is None:
             print("Unknown move... Try like A3.")
             continue
         try:
@@ -19,10 +15,6 @@ def human_move(game):
             break
         except IllegalActionException:
             print("Illegal move... Try again.")
-
-
-def atop(action):
-    return chr(action // 9 + ord('A')) + str(action % 9 + 1)
 
 
 def main(args):
@@ -50,7 +42,7 @@ def main(args):
 
         while not game.over:
             ai_move = game.best_action
-            print("AI plays:", atop(ai_move))
+            print("AI plays:", Game.action_to_coord(ai_move))
             print(game.apply(ai_move))
 
             if game.over:

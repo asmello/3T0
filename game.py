@@ -1,3 +1,4 @@
+import re
 import numpy as np
 
 from mcts import MCTS
@@ -26,6 +27,17 @@ class Game:
             raise IllegalActionException(f"tried illegal action {action}")
         self.mcts.apply(action)
         return self
+
+    @staticmethod
+    def coord_to_action(coord):
+        m = re.search("([a-zA-Z])(\d)$", coord)
+        if m:
+            return State.raw_shape[0] * (ord(m[1].upper()) - ord('A')) \
+                    + int(m[2]) - 1
+
+    @staticmethod
+    def action_to_coord(action):
+        return chr(action // 9 + ord('A')) + str(action % 9 + 1)
 
     def __repr__(self):
         return str(self.mcts.state)
