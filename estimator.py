@@ -140,9 +140,7 @@ class Estimator:
         x, p, v = zip(*data)
 
         # create a clone of this model
-        new = Estimator(self.input_shape,
-                        self.output_dim,
-                        self.reg_const)
+        new = Estimator(self.input_shape, self.output_dim, self.reg_const)
         new.model.set_weights(self.model.get_weights())
 
         # train the clone on these games

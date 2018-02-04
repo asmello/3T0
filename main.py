@@ -19,16 +19,18 @@ def human_move(game):
 
 def main(args):
 
-    ai = AI(load=args.input, filepath=args.output)
+    ai = AI(load=args.input, filepath=args.output,
+            num_episodes=args.num_episodes,
+            update_freq=args.update_freq,
+            eval_episodes=args.eval_episodes,
+            mcts_iters=args.mcts_iterations,
+            tau_cutoff=args.tau_cutoff)
 
     if not args.skip_training:
         print('=' * 80)
         print("Training...")
         print('=' * 80)
-        ai.train(episodes=args.num_episodes,
-                 update_freq=args.update_freq,
-                 eval_episodes=args.eval_episodes)
-
+        ai.train()
         print("AI is ready!")
 
     while True:
@@ -44,10 +46,8 @@ def main(args):
             ai_move = game.best_action
             print("AI plays:", Game.action_to_coord(ai_move))
             print(game.apply(ai_move))
-
             if game.over:
                 break
-
             human_move(game)
 
         print(f"Game over: {game.winner} wins!")
@@ -68,6 +68,11 @@ if __name__ == '__main__':
                         help="File path to store the best model.")
     parser.add_argument('-s', '--skip-training', action='store_true',
                         help="Skip training (requires pre-trained model).")
+    parser.add_argument('-c', '--tau-cutoff', default=20, type=int,
+                        help="Reduce exploration after this many moves.")
+    parser.add_argument('-m', '--mcts-iterations', default=100, type=int,
+                        help="Number of iterations for "
+                             "Monte Carlo Tree Search.")
     parser.add_argument('input', nargs='?',
                         help="Load model from this file.")
     main(parser.parse_args())

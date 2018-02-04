@@ -52,7 +52,10 @@ class Node:
 
 class MCTS:
 
-    def __init__(self, estimator, first=1):
+    def __init__(self, estimator, epsilon=0, maxiter=100, c=1.0, first=1):
+        self.c = c
+        self.epsilon = epsilon
+        self.maxiter = maxiter
         self.node = Node(player=first)
         self.estimator = estimator
 
@@ -66,22 +69,24 @@ class MCTS:
             self.node.expand(self.estimator)
         self.node = self.node.edge(action).end
 
-    def search(self, tau=1.0, maxiter=100, c=1.0, eps=0.25):
+    def search(self, tau=1.0):
         '''Search the state space for best action.'''
 
         # V(s, a) = Q(s, a) + U(s, a)
         def V(edge):
-            return edge.value + c * edge.prior \
+            return edge.value + self.c * edge.prior \
                 * sqrt(node.visits) / (1 + edge.visits)
+
+        eps = self.epsilon
+
+        # add Dirichlet noise for additional exploration at root
+        noise = sample_dirichlet(len(self.node.edges))
+        for i, edge in enumerate(self.node.edges):
+            edge.prior = (1 - eps) * edge.prior + eps * noise[i]
 
         node = self.node
 
-        # add Dirichlet noise for additional exploration at root
-        noise = sample_dirichlet(len(node.edges))
-        for i, edge in enumerate(node.edges):
-            edge.prior = (1 - eps) * edge.prior + eps * noise[i]
-
-        for i in range(maxiter):
+        for i in range(self.maxiter):
 
             # select
             while not node.is_leaf:

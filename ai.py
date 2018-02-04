@@ -9,7 +9,14 @@ from math import ceil
 
 class AI:
 
-    def __init__(self, load=None, filepath='best_estimator.h5'):
+    def __init__(self, load=None, filepath='best_estimator.h5',
+                 num_episodes=400, eval_episodes=20, update_freq=80,
+                 mcts_iters=100, tau_cutoff=20):
+        self.num_episodes = num_episodes
+        self.eval_episodes = eval_episodes
+        self.update_freq = update_freq
+        self.mcts_iters = mcts_iters
+        self.tau_cutoff = tau_cutoff
         self.filepath = filepath
         to_load = load or filepath
         if os.path.isfile(to_load):
@@ -27,11 +34,12 @@ class AI:
         else:
             e0, e1 = self.estimator, opponent
 
-        s0, s1 = MCTS(e0), MCTS(e1)
+        s0 = MCTS(e0, maxiter=self.mcts_iters)
+        s1 = MCTS(e1, maxiter=self.mcts_iters)
 
         while not s0.state.over:
 
-            a = State.domain[np.argmax(s0.search(eps=0))]
+            a = State.domain[np.argmax(s0.search())]
 
             s0.apply(a)
             s1.apply(a)
@@ -39,23 +47,24 @@ class AI:
             if s0.state.over:
                 break
 
-            a = State.domain[np.argmax(s1.search(eps=0))]
+            a = State.domain[np.argmax(s1.search())]
 
             s1.apply(a)
             s0.apply(a)
 
         return s0.state.winner
 
-    def simulate(self, first=1, tau_cutoff=20):
+    def simulate(self, first=1):
         '''Simulate a full game by self-playing.'''
 
-        mcts = MCTS(self.estimator, first=first)
+        mcts = MCTS(estimator=self.estimator, epsilon=0.25,
+                    maxiter=self.mcts_iters, first=first)
         history = []
         tau = 1.0
 
         while not mcts.state.over:
 
-            if len(history) == tau_cutoff:
+            if len(history) == self.tau_cutoff:
                 tau = 0.1
 
             policy = mcts.search(tau)
@@ -66,34 +75,34 @@ class AI:
 
         return history, mcts.state.winner
 
-    def train(self, episodes=400, update_freq=80, eval_episodes=20):
+    def train(self):
 
         games = []
 
-        for i in range(episodes):
+        for i in range(self.num_episodes):
 
             history, winner = self.simulate(first=np.random.choice([-1, 1]))
             print("Game --> winner:", State.player_codes[winner],
                   "moves:", len(history))
             games.append((history, winner))
 
-            if i % update_freq + 1 == update_freq:
+            if i % self.update_freq + 1 == self.update_freq:
 
                 print("Training new model...")
                 new_estimator = self.estimator.update(games)
 
                 score = 0
-                for j in range(eval_episodes):
+                for j in range(self.eval_episodes):
                     first = np.random.choice([-1, 1])
                     winner = self.duel(new_estimator, first=first)
                     score -= first * winner
 
                 print("New model score:", score)
-                if score >= ceil(0.05 * eval_episodes):
+                if score >= ceil(0.05 * self.eval_episodes):
                     self.estimator = new_estimator
                     self.estimator.save(self.filepath)
                     print("New model selected.")
                 else:
                     print("New model rejected.")
 
-                games = games[-5*eval_episodes:]  # crop history
+                games = games[-5 * self.eval_episodes:]  # truncate history

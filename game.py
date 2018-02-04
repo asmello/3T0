@@ -8,7 +8,7 @@ from state import State
 class Game:
 
     def __init__(self, ai, first=1):
-        self.mcts = MCTS(ai.estimator, first=first)
+        self.mcts = MCTS(ai.estimator, maxiter=ai.mcts_iters, first=first)
 
     @property
     def over(self):
@@ -16,7 +16,7 @@ class Game:
 
     @property
     def best_action(self):
-        return State.domain[np.argmax(self.mcts.search(eps=0))]
+        return State.domain[np.argmax(self.mcts.search())]
 
     @property
     def winner(self):
