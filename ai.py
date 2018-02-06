@@ -78,6 +78,7 @@ class AI:
     def train(self):
 
         games = []
+        winner_map = {-1: 'current', 0: 'neither', 1: 'new'}
 
         for i in range(self.num_episodes):
 
@@ -92,9 +93,11 @@ class AI:
                 new_estimator = self.estimator.update(games)
 
                 score = 0
+                print("Evaluating...")
                 for j in range(self.eval_episodes):
                     first = np.random.choice([-1, 1])
                     winner = self.duel(new_estimator, first=first)
+                    print("Duel --> winner:", winner_map[-first * winner])
                     score -= first * winner
 
                 print("New model score:", score)
