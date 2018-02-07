@@ -118,6 +118,6 @@ def sample_dirichlet(n):
     '''Ugly workaround for bug in numpy due to small alpha.'''
     while True:
         try:
-            return np.random.dirichlet(np.full(n, 0.003))
+            return np.random.dirichlet(np.full(n, 0.03))
         except ZeroDivisionError:
             continue
