@@ -3,8 +3,17 @@ from keras.layers import Input, Dense, Conv2D, LeakyReLU, \
 from keras.regularizers import l2
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping
+from keras import backend as K
 
+import tensorflow as tf
 import numpy as np
+
+
+def softmax_cross_entropy(t, y):
+    mask = tf.equal(t, tf.fill(tf.shape(t), -1.0))
+    t = tf.boolean_mask(t, mask)
+    y = tf.boolean_mask(y, mask)
+    return K.categorical_crossentropy(t, y)
 
 
 class Estimator:
@@ -14,7 +23,10 @@ class Estimator:
         self.input_shape = input_shape
         self.output_dim = output_dim
         self.reg_const = reg_const
-        self.model = load_model(filepath) if filepath else self._build_model()
+        self.model = load_model(filepath,
+                     custom_objects={
+                        'softmax_cross_entropy': softmax_cross_entropy
+                     }) if filepath else self._build_model()
 
     def save(self, filepath):
         self.model.save(filepath)
@@ -93,18 +105,39 @@ class Estimator:
 
     def _build_model(self):
         x_in = Input(shape=self.input_shape, name='input')
-        x = self._conv_layer(x_in, 64, 3)
-        x = self._res_layer(x, 64, 3)
+        x = self._conv_layer(x_in, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
+        x = self._res_layer(x, 256, 3)
         v_out = self._value_head(x)
         p_out = self._policy_head(x)
         model = Model(inputs=x_in, outputs=[p_out, v_out])
+
         model.compile(
             loss={
                 'value_head': 'mean_squared_error',
-                'policy_head': 'categorical_crossentropy'
+                'policy_head': softmax_cross_entropy
             },
             optimizer='adam'
         )
+
         return model
 
     def compute(self, state, use_symmetry=True):
@@ -149,7 +182,7 @@ class Estimator:
             y=[np.array(p), np.array(v)],
             verbose=0,
             epochs=200,
-            callbacks=[EarlyStopping('loss', 0.01, 10)]
+            callbacks=[EarlyStopping('loss', 0.01, 5)]
         )
 
         return new

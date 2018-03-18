@@ -11,12 +11,13 @@ class AI:
 
     def __init__(self, load=None, filepath='best_estimator.h5',
                  num_episodes=400, eval_episodes=20, update_freq=80,
-                 mcts_iters=100, tau_cutoff=20):
+                 mcts_iters=100, tau_cutoff=20, max_games=10):
         self.num_episodes = num_episodes
         self.eval_episodes = eval_episodes
         self.update_freq = update_freq
         self.mcts_iters = mcts_iters
         self.tau_cutoff = tau_cutoff
+        self.max_games = max_games
         self.filepath = filepath
         to_load = load or filepath
         if os.path.isfile(to_load):
@@ -39,7 +40,7 @@ class AI:
 
         while not s0.state.over:
 
-            a = State.domain[np.argmax(s0.search())]
+            a = State.domain[np.argmax(s0.search(use_symmetry=True))]
 
             s0.apply(a)
             s1.apply(a)
@@ -47,7 +48,7 @@ class AI:
             if s0.state.over:
                 break
 
-            a = State.domain[np.argmax(s1.search())]
+            a = State.domain[np.argmax(s1.search(use_symmetry=True))]
 
             s1.apply(a)
             s0.apply(a)
@@ -67,10 +68,11 @@ class AI:
             if len(history) == self.tau_cutoff:
                 tau = 0.1
 
-            policy = mcts.search(tau)
+            policy = mcts.search(tau, sentinel=-1, use_symmetry=True)
             history.append((mcts.state.raw, policy))
 
-            a = np.random.choice(State.domain, p=policy)
+            policy[policy < 0] = 0
+            a = np.random.choice(State.domain, p=policy / np.sum(policy))
             mcts.apply(a)
 
         return history, mcts.state.winner
@@ -108,4 +110,4 @@ class AI:
                 else:
                     print("New model rejected.")
 
-                games = games[-5 * self.eval_episodes:]  # truncate history
+                games = games[-self.max_games:] # truncate history

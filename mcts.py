@@ -38,8 +38,8 @@ class Node:
     def is_root(self):
         return not self.pedge
 
-    def expand(self, estimator):
-        p, v = estimator.compute(self.state)
+    def expand(self, estimator, use_symmetry=False):
+        p, v = estimator.compute(self.state, use_symmetry)
         self.edges = [Edge(self, action, p[action])
                       for action in self.state.actions]
         return v
@@ -69,7 +69,7 @@ class MCTS:
             self.node.expand(self.estimator)
         self.node = self.node.edge(action).end
 
-    def search(self, tau=1.0):
+    def search(self, tau=1.0, sentinel=0, use_symmetry=False):
         '''Search the state space for best action.'''
 
         # V(s, a) = Q(s, a) + U(s, a)
@@ -94,7 +94,7 @@ class MCTS:
 
             # expand
             if not node.state.over:
-                v = node.expand(self.estimator)
+                v = node.expand(self.estimator, use_symmetry)
             else:
                 v = node.state.winner != 0
 
@@ -108,16 +108,16 @@ class MCTS:
         visits = []
         for action in State.domain:
             edge = self.node.edge(action)
-            visits.append(edge.visits if edge else 0)
+            visits.append(edge.visits ** (1/tau) / self.node.visits
+                          if edge else sentinel)
 
-        visits = np.array(visits) ** (1/tau)
-        return visits / np.sum(visits)  # policy probability distribution (pi)
+        return np.array(visits)  # policy probability distribution (pi)
 
 
 def sample_dirichlet(n):
     '''Ugly workaround for bug in numpy due to small alpha.'''
     while True:
         try:
-            return np.random.dirichlet(np.full(n, 0.003))
+            return np.random.dirichlet(np.full(n, 0.03))
         except ZeroDivisionError:
             continue
